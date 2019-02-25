@@ -3,7 +3,7 @@
     Copyright (C) 1997,1998  Matt Kimball
 
     This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License version 2 as 
+    it under the terms of the GNU General Public License version 2 as
     published by the Free Software Foundation.
 
     This program is distributed in the hope that it will be useful,
@@ -64,6 +64,9 @@
 #include "display.h"
 #include "utils.h"
 
+
+extern char linkaddresses[20][500];
+extern char linknames[20][500];
 
 enum { NUM_FACTORS = 8 };
 static double factors[NUM_FACTORS];
@@ -430,18 +433,41 @@ static void mtr_curses_hosts(
             name = dns_lookup(ctl, addr);
             if (!net_up(at))
                 attron(A_BOLD);
+/*
+*PCD 2019.02.25
+*Check whether the host is listed in the name list of links
+*/
+            char printname[500];
+          	memset(printname,0,sizeof(printname));
+          	memcpy(printname,name,sizeof(printname));
+          	for(int i=0;i<20;i++){
+
+          		if(!strcmp(name,linkaddresses[i])){
+          		memset(printname,0,sizeof(printname));
+          		sprintf(printname,"%s\t%s",name,linknames[i]);
+          		attron(COLOR_PAIR(2));
+          		break;
+
+        		  }
+
+        	   }
+
 #ifdef HAVE_IPINFO
             if (is_printii(ctl))
                 printw(fmt_ipinfo(ctl, addr));
 #endif
-            if (name != NULL) {
-                if (ctl->show_ips)
-                    printw("%s (%s)", name, strlongip(ctl, addr));
-                else
-                    printw("%s", name);
-            } else {
-                printw("%s", strlongip(ctl, addr));
-            }
+            if (printname != NULL) {
+              if (ctl->show_ips)
+                printw("%s (%s)", printname, strlongip(ctl, addr));
+              else
+                printw("%s", printname);
+              } else {
+                  printw("%s", strlongip(ctl, addr));
+                }
+
+                attron(COLOR_PAIR(8));
+/*End of PCD edit*/
+
             attroff(A_BOLD);
 
             getyx(stdscr, y, __unused_int);
@@ -451,7 +477,7 @@ static void mtr_curses_hosts(
             hd_len = 0;
             for (i = 0; i < MAXFLD; i++) {
                 /* Ignore options that don't exist */
-                /* On the other hand, we now check the input side. Shouldn't happen, 
+                /* On the other hand, we now check the input side. Shouldn't happen,
                    can't be careful enough. */
                 j = ctl->fld_index[ctl->fld_active[i]];
                 if (j == -1)

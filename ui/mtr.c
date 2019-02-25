@@ -253,14 +253,15 @@ static void read_link_names(){
 
       int linkindex=0;
   while (fgets(line, sizeof(line), linknamefile)) {
+
       char *linknameaddr = trim(line, '\0');
       char *linkaddr= strtok(linknameaddr,"\t");
       char *linkname= strtok(NULL,"\t");
       memcpy(linkaddresses[linkindex],linkaddr,sizeof(linkaddresses[linkindex]));
       memcpy(linknames[linkindex],linkname,sizeof(linknames[linkindex]));
-
-      printf("%s\t Link Address:%s \t Link name:%s \n ", linknameaddr,linkaddresses[linkindex],linknames[linkindex]);
+      // printf("%s\t Link Address:%s \t Link name:%s \n ", linknameaddr,linkaddresses[linkindex],linknames[linkindex]);
       linkindex++;
+
   }
 
 }
