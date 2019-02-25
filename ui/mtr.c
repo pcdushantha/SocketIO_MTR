@@ -72,6 +72,9 @@
 
 char *myname;
 
+char linkaddresses[20][500];
+char linknames[20][500];
+
 const struct fields data_fields[MAXFLD] = {
     /* key, Remark, Header, Format, Width, CallBackFunc */
     {' ', "<sp>: Space between fields", " ", " ", 1, &net_drop},
@@ -235,6 +238,32 @@ static void read_from_file(
         fclose(in);
 }
 
+/*
+*PCD 2019.02.25
+*Reads ip addresses and link names from linknames.txt
+*/
+static void read_link_names(){
+  FILE *linknamefile;
+  char line[512];
+
+  linknamefile = fopen("linknames.txt", "r");
+      if (!linknamefile) {
+          error(EXIT_FAILURE, errno, "open %s", linknamefile);
+      }
+
+      int linkindex=0;
+  while (fgets(line, sizeof(line), linknamefile)) {
+      char *linknameaddr = trim(line, '\0');
+      char *linkaddr= strtok(linknameaddr,"\t");
+      char *linkname= strtok(NULL,"\t");
+      memcpy(linkaddresses[linkindex],linkaddr,sizeof(linkaddresses[linkindex]));
+      memcpy(linknames[linkindex],linkname,sizeof(linknames[linkindex]));
+
+      printf("%s\t Link Address:%s \t Link name:%s \n ", linknameaddr,linkaddresses[linkindex],linknames[linkindex]);
+      linkindex++;
+  }
+
+}
 /*
  * If the file stream is associated with a regular file, lock the file
  * in order coordinate writes to a common file from multiple mtr
@@ -812,6 +841,8 @@ int main(
     parse_mtr_options(&ctl, &names_head, getenv("MTR_OPTIONS"));
 
     parse_arg(&ctl, &names_head, argc, argv);
+
+    read_link_names();
 
     while (optind < argc) {
         char *name = argv[optind++];
