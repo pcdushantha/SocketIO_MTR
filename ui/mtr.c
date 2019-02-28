@@ -246,10 +246,7 @@ static void read_link_names(){
   FILE *linknamefile;
   char line[512];
 
-  linknamefile = fopen("linknames.txt", "r");
-      if (!linknamefile) {
-          error(EXIT_FAILURE, errno, "open %s", linknamefile);
-      }
+  linknamefile = fopen("linknames.txt", "r");     
 
       int linkindex=0;
   while (fgets(line, sizeof(line), linknamefile)) {
