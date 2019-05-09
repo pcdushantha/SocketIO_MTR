@@ -1,0 +1,77 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+
+  <title>MTR Client</title>
+  
+  <meta name="author" content="SitePoint">
+
+  <link rel="stylesheet" href="css/styles.css?v=1.0">
+
+  <style>
+    table, th, td {
+        border: 1px solid black;
+        }
+    .button {
+        
+        border: none;
+        color: white;
+        padding: 15px 32px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        margin: 4px 2px;
+        cursor: pointer;
+        }
+    #start_button{
+        background-color: #4CAF50;
+    }
+    #stop_button{
+        background-color: rgb(226, 42, 51);
+    }
+    /* #send_button{
+        background-color: rgb(42, 85, 226);
+    } */
+    </style>
+
+</head>
+
+<body>
+    <div class="input">
+            <form>
+                URL:<br>
+                <input type="text" id="url"><br>                
+            </form>
+            <button class="button" id="start_button" >START</button>
+            <button class="button" id="stop_button">STOP</button>
+            <!-- <button class="button" id="send_button">SEND</button> -->
+
+    </div>
+    <div class="output">
+            <table id="displayTable">
+               <!-- <colgroup>
+                    <col span="2" style="background-color:red">
+                    <col style="background-color:yellow">
+                </colgroup> -->
+               
+                <!--<pos> <host> <loss%> <rcvd pckts> <sent pckts> <best> <avg> <worst>-->
+                <tr>
+                    <th>Pos</th>
+                    <th>Host</th>
+                    <th>Loss%</th>
+                    <th>Received pckts</th>
+                    <th>Sent pckts</th>
+                    <th>Best</th>
+                    <th>Avg</th>
+                    <th>Worst</th>
+                </tr>
+                
+            </table>
+                      
+    </div>
+  <script src="js/scripts.js"></script>
+</body>
+</html>
