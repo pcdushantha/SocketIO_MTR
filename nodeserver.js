@@ -1,3 +1,4 @@
+const timeoutms=60000;
 const childProcess = require('child_process');
 var WebSocketServer = require('websocket').server;
 var http = require('http');
@@ -49,14 +50,9 @@ wsServer.on('request', function(request) {
         if (message.type === 'utf8') {
             console.log('Received Message: ' + message.utf8Data);
             
-
-            //send the received message to all of the 
-            //connections in the connection array            
-            // var test = 'test';
-            // connection.sendUTF(test);
-            // connection.sendUTF("STOP"); 
             var jsonobj = JSON.parse(message.utf8Data);
             if(jsonobj.command === 'START' && process === undefined){
+
                 process = childProcess.spawn('mtr',['-4','-p','-n',jsonobj.value]); 
                 
                 timeout=setTimeout(function(){
@@ -69,7 +65,7 @@ wsServer.on('request', function(request) {
                         connection.sendUTF("TIMEOUT");
                     }
                     
-                }, 60000);
+                }, timeoutms);
 
                 process.stdout.on('data', function (data) {
                     console.log('stdout: ' + data); 
@@ -92,24 +88,22 @@ wsServer.on('request', function(request) {
                 console.log('Child Process');
 
             }
-            if(jsonobj.command === 'STOP'  && process != undefined){
-               
+            else if(jsonobj.command === 'STOP'  && process != undefined){               
                // process.stdin.end();
                 //process.stdout.end();
                 process.kill('SIGINT');
                 clearTimeout(timeout);
-                process = undefined;
-                // connection.sendUTF("STOP");
-                
+                process = undefined                                
             }
-
-
-            
+            else if(jsonobj.command === 'SAVE'  && process != undefined){
+                // save data to the database
+            }             
         }
         else if (message.type === 'binary') {
             console.log('Received Binary Message of ' + message.binaryData.length + ' bytes');
             connection.sendBytes(message.binaryData);
         }
+
     });
     connection.on('close', function(reasonCode, description) {
         console.log((new Date()) + ' Peer ' + connection.remoteAddress + ' disconnected.');
