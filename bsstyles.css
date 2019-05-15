@@ -1,0 +1,97 @@
+body {
+    padding: 0;
+    margin: 0;
+    background: #ffffff;
+  }
+  /*--- navigation bar ---*/
+  .navbar {
+    background:#2d73db;
+  }
+  .nav-link,
+  .navbar-brand {
+    color: #fff;
+    cursor: pointer;
+  }
+  .nav-link {
+    margin-right: 1em !important;
+  }
+  .nav-link:hover {
+    color: #000;
+  }
+  .navbar-brand:hover {
+    color: rgb(231, 156, 16);
+    
+  }
+  .navbar{
+    min-height: 50px;
+    
+  }
+  .navbar-collapse {
+    justify-content: flex-end;
+  }
+  .input-group{
+    /* position: relative; */
+    width: 50%;
+    margin-top: 2%;
+    max-width: 600px;
+    border-width: 15px;
+    min-width: 400px;
+    
+    /* justify-content: center; */
+  }
+  .btn {
+    font-size: 28px;
+    font-weight: bolder;
+    
+    
+  }
+#input:hover,#input:focus,#input:active{
+    background-color: #ffeecdaf;
+    /* border-color: #285e8e; */
+    /* font-size: bolder; */
+}
+#input:invalid{
+    background-color: #49a3f741;
+    /* border-color: #285e8e; */
+    /* font-size: bolder; */
+}
+#input:valid{
+    background-color: #ffeecdaf;
+    /* border-color: #285e8e; */
+    /* font-size: bolder; */
+}
+#start_button:hover, #start_button:focus, #start_button:active{
+    color: #fff;
+    background-color: #03b438ce;
+    /* border-color: #285e8e; */
+}
+#stop_button:hover, #stop_button:focus, #stop_button:active{
+    color: #fff;
+    background-color: #db3106d0;
+    /* border-color: #285e8e; */
+}
+#save_button:hover, #save_button:focus, #save_button:active{
+    color: #fff;
+    background-color: #e0ad04d2;
+    /* border-color: #285e8e; */
+}
+  /* #input-group{
+    font-size: 28px;
+    font-weight: bolder;
+    
+  } */
+  .container-fluid{
+    margin-top: 2%;
+   
+  }
+  /* #col1{
+    background-color: crimson;
+  } */
+  #col2{
+    /* background-color: blue; */
+    max-width: 400px;
+    text-align: center;
+  }
+  /* #col3{
+    background-color: green;
+  } */
