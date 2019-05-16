@@ -116,13 +116,13 @@ io.on('connection', function(socket){
                     break;
                 case 'SAVE':
                   
-                    var sql = "INSERT INTO dumps.mtr_save (`name`, `data`,`user`) VALUES(?,?,?)";  
+                    var sql = "INSERT INTO dumps.mtr_save (`name`, `data`) VALUES(?,?)";  
                 
                     var today = new Date();
                     var date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
                     var time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
                     var name = date+' '+time+' '+injsonobj.url;
-                    mydb.query(sql,[name,JSON.stringify(injsonobj.value),injsonobj.username], function (err, result) {
+                    mydb.query(sql,[name,JSON.stringify(injsonobj.value)], function (err, result) {
                         if (err) throw err;
                         console.log("Number of records inserted: " + result.affectedRows);    
                     });
@@ -134,7 +134,7 @@ io.on('connection', function(socket){
                 //SELECT data FROM dumps.mtr_save ORDER BY id DESC LIMIT 1;
                 //SELECT data FROM dumps.mtr_save where name="2019-5-11 19:27:15 www.yahoo.com";
                     // var sql = "SELECT data FROM dumps.mtr_save ORDER BY id DESC LIMIT 1";  
-                    var sql = "SELECT data FROM dumps.mtr_save where name="+ JSON.stringify(injsonobj.value) +"AND "+ "user="+JSON.stringify(injsonobj.username) ;
+                    var sql = "SELECT data FROM dumps.mtr_save where name="+ JSON.stringify(injsonobj.value) ;
                     
                     mydb.query(sql,function (err, result) {
                         if (err) throw err;
@@ -151,7 +151,7 @@ io.on('connection', function(socket){
                 //SELECT * FROM dumps.mtr_save ORDER BY id DESC LIMIT 0,3;
                 //SELECT data FROM dumps.mtr_save ORDER BY id DESC LIMIT 1;
                     var nameArray=[];
-                    var sql = "SELECT name FROM dumps.mtr_save where user="+JSON.stringify(injsonobj.username) + " ORDER BY id DESC LIMIT 10";  
+                    var sql = "SELECT name FROM dumps.mtr_save ORDER BY id DESC LIMIT 10";  
                 
                     
                     mydb.query(sql,function (err, result) {
