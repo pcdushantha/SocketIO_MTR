@@ -6,6 +6,9 @@ var io = require('socket.io')(http);
 var mysql = require('mysql');
 const pingsock = io.of('/ping');
 var ping = require('ping');
+var schedule = require('node-schedule');
+ 
+
 var pingfunc;
 var pinginterval=3000;
 var ipAddresses=[];
@@ -33,7 +36,92 @@ try{
 }
 
 
+var j = schedule.scheduleJob('*/30 * * * * *',async function(){
 
+   async function createChild(destinations,index){
+        var dataArray=[];
+        var noOfDestinations=destinations.length;
+        var process = childProcess.spawn('mtr',['-4','-p','-n','-c 5',destinations[index]]); 
+                   
+        timeout=setTimeout(function(){
+            if(process != undefined){
+                console.log('Timeout kill');
+                process.stdin.end();
+                process.stdout.end();
+                process.kill('SIGINT');
+                process = undefined;                        
+                
+            }
+            
+        }, 60000);
+
+        process.stdout.on('data', function (data) {
+            console.log('stdout: ' + data);                     
+            
+            var stdoutArray = String(data).split("\n");
+           
+            var datalength = stdoutArray.length;
+            
+            for(var i=0; i<datalength; i++ ){
+
+               var recvArray= stdoutArray[i].split(" ");
+               recvArray[0]= parseInt(recvArray[0]);
+               updateData(recvArray,dataArray);
+            }       
+        });
+
+        process.stderr.on('data', function (data) {    
+            console.log('stderr: ' + data); 
+            process = undefined; 
+            clearTimeout(timeout);  
+        });
+            
+        process.on('close', function (code) {    
+            console.log('Child process exit with code: ' + code);
+            process = undefined;
+            clearTimeout(timeout);
+
+            var sql = "INSERT INTO dumps.mtr_save (`name`, `data`,`user`) VALUES(?,?,?)";  
+            
+            
+            var name = destinations[index];
+            try{
+                mydb.query(sql,[name,JSON.stringify(dataArray),'ADMIN'], function (err, result) {
+                    if (err) throw err;
+                    console.log("Number of records inserted: " + result.affectedRows);    
+                });
+            }catch(err){
+                console.log(err);
+            } 
+
+            index++;
+            if(index<noOfDestinations){
+                
+                createChild(destinations,index);                
+            }
+           
+        });
+
+        console.log('Child Process:',destinations[index]);
+    }
+   
+    var destinations=[];
+    await mydb.query("SELECT destination FROM dumps.mtr_dest", async function (err, result, fields) {
+        if (err) throw err;
+        
+        await Object.keys(result).forEach(function(key) {       
+            var row = result[key];       
+            
+            destinations.push(row.destination);
+        });
+        console.log(destinations);
+        var index=0;
+        createChild(destinations,index); 
+        
+    });
+
+
+  });
 // Load link details from the database
 try{
     mydb.query("SELECT ip_addr,link_name,location FROM dumps.mtr", function (err, result, fields) {
@@ -228,4 +316,28 @@ http.listen(3000, function(){
 });
 
 
-
+function updateData(recvArray,dataArray){
+    
+     var index;
+     for(index=0; index<dataArray.length; index++){
+  
+        if(dataArray[index][0] === recvArray[0]){
+           if(dataArray[index][1] != recvArray[1]){
+                dataArray=[];               
+                break;
+           }
+           dataArray.splice(index,1,recvArray);
+           break;
+        }
+        else if(dataArray[index][0] > recvArray[0]){
+            dataArray.splice(index,0,recvArray);           
+           break;
+        }
+     }
+     if(recvArray[0] ==1 && dataArray[0] === undefined ){
+        dataArray.push(recvArray);   
+     }
+     else if(recvArray[0] > dataArray[dataArray.length-1][0]){
+        dataArray.push(recvArray);
+     }
+   }
