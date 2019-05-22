@@ -1,9 +1,7 @@
-// if ("WebSocket" in window) {
-   //  alert("WebSocket is supported by your Browser!");
-    
-    // Let us open a web socket
-    var ipAddresses;
-    var linkNames;
+
+    var timeout;
+    var ipAddresses=[];
+    var linkNames=[];
     var status = "STOPPED";
     var displayArray =[];
     var compareArray=[];
@@ -39,17 +37,16 @@
          case "STOP":
             status = "STOPPED";
             break;
-         case "START_IP":
+
+         case "LINKS":
             status = "STOPPED"; 
-            //console.log("IP ADDRESSES:", injsonobj.value)
-            ipAddresses=injsonobj.value;
-            console.log("IP ADDRESSES:", ipAddresses);
-            break;
-         case "START_LINK":
-            status = "STOPPED"; 
-            //console.log("IP ADDRESSES:", injsonobj.value)
-            linkNames=injsonobj.value;
-            console.log("LINK NAMES:", linkNames);
+            Object.keys(injsonobj.value).forEach(function(key){
+               
+               ipAddresses.push(key);
+               linkNames.push(injsonobj.value[key]);
+
+            });
+            
             break;
          case "DATA":
             var data = injsonobj.value;
@@ -133,6 +130,13 @@
    
 
 function ServiceStart() {
+   var timevalue=document.getElementById("timeInput");
+   var timediv=document.getElementById("inputGroupSelect01");
+   
+      
+
+   
+   
    if(status === "STOPPED"){
    
       displayArray =[];
@@ -145,10 +149,7 @@ function ServiceStart() {
       
       var url = document.getElementById("input").value;
       
-      // if(ws.readyState != 1){
-      //    console.log('Server not ready !');
-      //    alert("Server not ready !"); 
-      // }
+     
       if(url === ''){
          console.log('Please enter URL');
          alert("Please enter URL"); 
@@ -157,6 +158,26 @@ function ServiceStart() {
          
          var jsonobj={"command":"START","value":String(url)}            
          socket.emit("message",jsonobj);
+         if(timevalue.value != ""){
+            // console.log("timevalue:",timevalue);
+            var timeoutms=parseInt(timevalue.value)*1000; 
+   
+
+            switch(timediv.value){
+               case "Minutes":
+                  timeoutms=timeoutms*60;
+               break;
+               case "Seconds":
+                  
+               break;
+               case "Hours":
+                  timeoutms=timeoutms*60*60;
+               break;
+            }
+             timeout=setTimeout(function(){
+               ServiceStop();                        
+                    }, timeoutms);
+         }
       }
    }
    else {alert("Server Busy !");}
@@ -164,44 +185,43 @@ function ServiceStart() {
  }
 
  function ServiceStop() {   
-   // if(ws.readyState != 1){
-   //    console.log('Server not available !');
-   //    alert("Server not available !"); 
-   // } 
-   // else{
+   
       var jsonobj={"command":"STOP","value":" "}            
       socket.emit("message",jsonobj);
-   // } 
+      clearTimeout(timeout); 
      
    
  }
 
  function SavetoDB() {   
-   // if(ws.readyState != 1){
-   //    console.log('Server not available !');
-   //    alert("Server not available !"); 
-   // } 
-   // else{
+   
       var jsonobj={"command":"SAVE","value":displayArray,"url":document.getElementById("input").value,"username":userName}            
       socket.emit("message",jsonobj);
       var jsonobj={"command":"LOAD_HISTORY","value":"","username":userName}            
-      socket.emit("message",jsonobj);
-   // } 
-     
+      socket.emit("message",jsonobj);   
    
  }
+
  document.getElementById("start_button").onclick = ServiceStart;
  document.getElementById("stop_button").onclick = ServiceStop;
  document.getElementById("save_button").onclick = SavetoDB;
 //  savedTable.cells.addEventListener("click", function(){ alert("Hello World!"); });
 
- function updateTable(recvArray){
-  // console.log(recvArray);
+ function updateTable(recvArray){ 
+  
    
    var index;
    for(index=0; index<displayArray.length; index++){
 
       if(displayArray[index][0] === recvArray[0]){
+         if(displayArray[index][1] != recvArray[1]){
+            displayArray=[];
+            var rowCount=currentTable.rows.length;     
+            for (var i = 1; i < rowCount; i++) {         
+               currentTable.deleteRow(1);
+            }
+            break;
+         }
          displayArray.splice(index,1,recvArray);
          currentTable.deleteRow(index+1);
          insertRowTable(recvArray,index,currentTable);
@@ -215,13 +235,14 @@ function ServiceStart() {
    }
    if(recvArray[0] ==1 && displayArray[0] === undefined ){
       displayArray.push(recvArray);
-      insertRowTable(recvArray,0,currentTable)
+      insertRowTable(recvArray,0,currentTable);
 
    }
    else if(recvArray[0] > displayArray[displayArray.length-1][0]){
       displayArray.push(recvArray);
-      insertRowTable(recvArray,displayArray.length-1,currentTable)
+      insertRowTable(recvArray,displayArray.length-1,currentTable);
    }
+
 
  }
 

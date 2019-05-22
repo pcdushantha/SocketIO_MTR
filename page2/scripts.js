@@ -1,6 +1,6 @@
     
-    var ipAddresses;
-    var linkNames;
+    var ipAddresses=[];
+    var linkNames=[];
     var url;
     var status = "STOPPED";
     var displayArray1 =[];
@@ -9,6 +9,9 @@
     var table1 = document.getElementById("table1");
     var table2 = document.getElementById("table2");
     var table3 = document.getElementById("table3");
+    var singapore = document.getElementById("pingsinga");
+    var mumbai = document.getElementById("pingmumbai");
+    var oman = document.getElementById("pingoman");
     var table1_heading = document.getElementById("table1_name");
     var table2_heading = document.getElementById("table2_name");
     var table3_heading = document.getElementById("table3_name");
@@ -16,11 +19,42 @@
     var timediv=document.getElementById("inputGroupSelect01");
     
     var table1name,table2name,table3name;
+    var singaporeLinks=[];
+    var mumbaiLinks=[];
+    var omanLinks = [];
 
     var socket = io();
     var timeout;
     
-   
+    socket.on('ping', function(msg){
+      // console.log(msg);
+      // var injson=JSON.parse(msg);
+      Object.keys(msg).forEach(function(key){
+         console.log(msg[key] ? "True":"False");
+         // if(singaporeLinks.includes(key)){
+         //    singapore.rows[singaporeLinks.indexOf(key)+1].style.backgroundColor= yellow";
+         // }
+         // else if(mumbaiLinks.includes(key)){
+
+         // }
+         // else if(omanLinks.includes(key)){
+
+         // }
+
+      });
+      // var data = msg.split("\n");
+      // console.log(data);
+      
+      // var datalength = data.length;
+      
+      // for(var i=0; i<datalength; i++ ){
+
+      //    var recvArray= data[i].split(" ");
+      //    if(singaporeLinks.includes(recvArray[1])){}
+      //    recvArray[0]= parseInt(recvArray[0]);
+      //    updateTable(recvArray);
+      // }       
+    });
     
     socket.on('message', function(msg){
        console.log('message: ' + msg);
@@ -32,17 +66,37 @@
          case "STOP":
             status = "STOPPED";
             break;
-         case "START_IP":
+         
+         case "LINKS":
             status = "STOPPED"; 
-            //console.log("IP ADDRESSES:", injsonobj.value)
-            ipAddresses=injsonobj.value;
-            console.log("IP ADDRESSES:", ipAddresses);
-            break;
-         case "START_LINK":
-            status = "STOPPED"; 
-            //console.log("IP ADDRESSES:", injsonobj.value)
-            linkNames=injsonobj.value;
-            console.log("LINK NAMES:", linkNames);
+            Object.keys(injsonobj.value).forEach(function(key){
+               
+               ipAddresses.push(key);
+               linkNames.push(injsonobj.value[key].link_name);
+               //console.log(injsonobj.value[key].link_name);
+               switch(injsonobj.value[key].location){
+                  case "Singapore":
+                     singaporeLinks.push(key);
+                     var row = singapore.insertRow(singapore.rows.length);
+                     var cell = row.insertCell(0);
+                     cell.innerHTML = key + " ["+injsonobj.value[key].link_name+"]"
+                  break;
+                  case "Mumbai":
+                     mumbaiLinks.push(key);
+                     var row = mumbai.insertRow(mumbai.rows.length);
+                     var cell = row.insertCell(0);
+                     cell.innerHTML = key + " ["+injsonobj.value[key].link_name+"]"
+                  break;
+                  case "Oman":
+                     omanLinks.push(key);
+                     var row = oman.insertRow(oman.rows.length);
+                     var cell = row.insertCell(0);
+                     cell.innerHTML = key + " ["+injsonobj.value[key].link_name+"]"
+                  break;
+               }
+
+            });
+            
             break;
          case "DATA":
             var data = injsonobj.value;
@@ -92,7 +146,7 @@ function ServiceStart() {
          console.log('Please enter URL');
          alert("Please enter URL"); 
       }   
-      else{
+      else {
          
          var jsonobj={"command":"START","value":String(url)}            
          socket.emit("message",jsonobj);
@@ -124,8 +178,7 @@ function ServiceStart() {
       var timevalue=document.getElementById("timeInput");
       var timediv=document.getElementById("inputGroupSelect01");
       var timeoutms=parseInt(timevalue.value)*1000; 
-      // console.log("timediv type:", typeof(timediv.value));
-      // console.log("timediv :", timediv.value);
+     
 
       switch(timediv.value){
          case "Minutes":
@@ -143,62 +196,54 @@ function ServiceStart() {
       ServiceStart();
       var all = document.getElementsByClassName('input-group');
       for (var i = 0; i < all.length; i++) {
-      all[i].style.marginTop = 0 ;
+         all[i].style.marginTop = 0 ;
       }
       var column3=document.getElementById("col1");
       column3.style.display="block";
       table1name= new Date().toLocaleString();
       table1_heading.innerHTML=table1name;
-   timeout=setInterval(function(){
-      console.log("value: ",typeof(parseInt(timevalue.value)));
-      //stop service
-      // var jsonobj={"command":"STOP","value":" "}            
-      // socket.emit("message",jsonobj);
-      //clear tables
-      // var rowCount=table1.rows.length;     
-      // for (var i = 1; i < rowCount; i++) {         
-      //    table1.deleteRow(1);
-      // }
-      var rowCount=table2.rows.length;     
-      for (var i = 1; i < rowCount; i++) {         
-         table2.deleteRow(1);
-      }  
-      var rowCount=table3.rows.length;     
-      for (var i = 1; i < rowCount; i++) {         
-         table3.deleteRow(1);
-      }  
-        
-      //replace array3 with array 2
-      displayArray3=displayArray2;
-      //replace array2 with array 1
-      displayArray2=displayArray1;
-      //start service
-      table1name="["+table1name+"]"+ "  ->  "+"["+new Date().toLocaleString()+"]";
-      table1_heading.innerHTML=table1name;
-      if(displayArray3.length>0){
-         var column3=document.getElementById("col3");
-         column3.style.display="block";
-         for(var i=0;i< displayArray3.length;i++){         
-            insertRowTable(displayArray3[i],i,table3);
+      timeout=setInterval(function(){
+         console.log("value: ",typeof(parseInt(timevalue.value)));
+      
+         var rowCount=table2.rows.length;     
+         for (var i = 1; i < rowCount; i++) {         
+            table2.deleteRow(1);
+         }  
+         var rowCount=table3.rows.length;     
+         for (var i = 1; i < rowCount; i++) {         
+            table3.deleteRow(1);
+         }  
+         
+         //replace array3 with array 2
+         displayArray3=[...displayArray2];
+         //replace array2 with array 1
+         displayArray2=[...displayArray1];
+         //start service
+         table1name="["+table1name+"]"+ "  ->  "+"["+new Date().toLocaleString()+"]";
+         table1_heading.innerHTML=table1name;
+         if(displayArray3.length>0){
+            var column3=document.getElementById("col3");
+            column3.style.display="block";
+            for(var i=0;i< displayArray3.length;i++){         
+               insertRowTable(displayArray3[i],i,table3);
+            }
+            table3_heading.innerHTML=table2_heading.innerHTML;
          }
-         table3_heading.innerHTML=table2_heading.innerHTML;
-      }
-      if(displayArray2.length>0){
-         var column2=document.getElementById("col2");
-         column2.style.display="block";
-         for(var i=0;i< displayArray2.length;i++){         
-            insertRowTable(displayArray2[i],i,table2);
+         if(displayArray2.length>0){
+            var column2=document.getElementById("col2");
+            column2.style.display="block";
+            for(var i=0;i< displayArray2.length;i++){         
+               insertRowTable(displayArray2[i],i,table2);
+            }
+            table2_heading.innerHTML=table1_heading.innerHTML;
          }
-         table2_heading.innerHTML=table1_heading.innerHTML;
-      }
-      
-      
-      
-      // displayArray1 =[];
-      table1name= new Date().toLocaleString();
-      table1_heading.innerHTML=table1name;
-      // var jsonobj={"command":"START","value":String(url)}            
-      // socket.emit("message",jsonobj);      
+         
+         
+         
+         
+         table1name= new Date().toLocaleString();
+         table1_heading.innerHTML=table1name;
+             
            
       
    }, timeoutms);
@@ -217,6 +262,14 @@ function ServiceStart() {
    for(index=0; index<displayArray1.length; index++){
 
       if(displayArray1[index][0] === recvArray[0]){
+         if(displayArray1[index][1] != recvArray[1]){
+            displayArray1=[];
+            var rowCount=table1.rows.length;     
+            for (var i = 1; i < rowCount; i++) {         
+               table1.deleteRow(1);
+            }
+            break;
+         }
          displayArray1.splice(index,1,recvArray);
          table1.deleteRow(index+1);
          insertRowTable(recvArray,index,table1);
@@ -230,12 +283,12 @@ function ServiceStart() {
    }
    if(recvArray[0] ==1 && displayArray1[0] === undefined ){
       displayArray1.push(recvArray);
-      insertRowTable(recvArray,0,table1)
+      insertRowTable(recvArray,0,table1);
 
    }
    else if(recvArray[0] > displayArray1[displayArray1.length-1][0]){
       displayArray1.push(recvArray);
-      insertRowTable(recvArray,displayArray1.length-1,table1)
+      insertRowTable(recvArray,displayArray1.length-1,table1);
    }
 
  }
