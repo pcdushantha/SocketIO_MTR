@@ -30,7 +30,7 @@ body {
     justify-content: flex-end;
   }
   .input-group{
-    /* position: relative; */
+   
     margin: auto;
     width: 33.33%;
     margin-top: 4%;
@@ -38,12 +38,9 @@ body {
     border-width: 15px;
     min-width: 400px;
     padding-top: 3%;
-    padding-bottom: 2%;
-    /* margin-left: 33.33%;
-    margin-right: 33.33%; */
-    
-    /* justify-content: center; */
+    padding-bottom: 2%;   
   }
+  
   .timeoutInput{
     margin-top:0;
     /* float: right; */
@@ -137,17 +134,17 @@ body {
   #col1{
     max-width: 33.33%;
     min-width: 600px;
-    display: none;
+    /* display: none; */
   }
   #col2{
     max-width: 33.33%;
     min-width: 600px;
-    display: none;
+    /* display: none; */
   } 
  #col3{ 
   max-width: 33.33%;
   min-width: 600px;
-  display: none;
+  /* display: none; */
   }
 #pingcol{ 
   /* max-width: 33.33%; */

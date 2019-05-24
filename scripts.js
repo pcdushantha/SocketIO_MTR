@@ -25,6 +25,8 @@
 
     var socket = io();
     var timeout;
+
+  
     
     socket.on('ping', function(msg){
       // console.log(msg);
@@ -107,10 +109,27 @@
             for(var i=0; i<datalength; i++ ){
 
                var recvArray= webSocketArray[i].split(" ");
-               recvArray[0]= parseInt(recvArray[0]);
-               updateTable(recvArray);
+               if(recvArray.length===8){
+                  recvArray[0]= parseInt(recvArray[0]);
+                  updateTable(recvArray);
+               }
             }       
             break;
+         case "LOAD_HISTORY":
+            status = "STOPPED";
+            // console.log("TYPE OF LOAD DATA:", typeof(injsonobj.value));
+            displayArray2 = JSON.parse(injsonobj.value);
+            var rowCount=table2.rows.length;
+            // console.log('currentTable.length :', rowCount);
+            for (var i = 1; i < rowCount; i++) {
+               // console.log('delete row :', i);
+               table2.deleteRow(1);
+            }  
+            for(var i=0;i< displayArray2.length;i++){
+               // console.log("LOAD DATA:", compareArray[i]);
+               insertRowTable(displayArray2[i],i,table2);
+            }
+         break;
          case "TIMEOUT":
             alert("!! TIMEOUT !!");
             break;
@@ -147,7 +166,8 @@ function ServiceStart() {
          alert("Please enter URL"); 
       }   
       else {
-         
+         var jsonobj={"command":"LOAD_HISTORY","url":String(url),"username":"TEST2"}            
+         socket.emit("message",jsonobj);
          var jsonobj={"command":"START","value":String(url)}            
          socket.emit("message",jsonobj);
       }
@@ -173,84 +193,84 @@ function ServiceStart() {
      
 //  }
 
- function StartLive(){
-      //start service
-      var timevalue=document.getElementById("timeInput");
-      var timediv=document.getElementById("inputGroupSelect01");
-      var timeoutms=parseInt(timevalue.value)*1000; 
+//  function StartLive(){
+//       //start service
+//       var timevalue=document.getElementById("timeInput");
+//       var timediv=document.getElementById("inputGroupSelect01");
+//       var timeoutms=parseInt(timevalue.value)*1000; 
      
 
-      switch(timediv.value){
-         case "Minutes":
-            timeoutms=timeoutms*60;
-         break;
-         case "Seconds":
+//       switch(timediv.value){
+//          case "Minutes":
+//             timeoutms=timeoutms*60;
+//          break;
+//          case "Seconds":
             
-         break;
-         case "Hours":
-            timeoutms=timeoutms*60*60;
-         break;
+//          break;
+//          case "Hours":
+//             timeoutms=timeoutms*60*60;
+//          break;
 
-      }
+//       }
       
-      ServiceStart();
-      var all = document.getElementsByClassName('input-group');
-      for (var i = 0; i < all.length; i++) {
-         all[i].style.marginTop = 0 ;
-      }
-      var column3=document.getElementById("col1");
-      column3.style.display="block";
-      table1name= new Date().toLocaleString();
-      table1_heading.innerHTML=table1name;
-      timeout=setInterval(function(){
-         console.log("value: ",typeof(parseInt(timevalue.value)));
+//       ServiceStart();
+//       var all = document.getElementsByClassName('input-group');
+//       for (var i = 0; i < all.length; i++) {
+//          all[i].style.marginTop = 0 ;
+//       }
+//       var column3=document.getElementById("col1");
+//       column3.style.display="block";
+//       table1name= new Date().toLocaleString();
+//       table1_heading.innerHTML=table1name;
+//       timeout=setInterval(function(){
+//          console.log("value: ",typeof(parseInt(timevalue.value)));
       
-         var rowCount=table2.rows.length;     
-         for (var i = 1; i < rowCount; i++) {         
-            table2.deleteRow(1);
-         }  
-         var rowCount=table3.rows.length;     
-         for (var i = 1; i < rowCount; i++) {         
-            table3.deleteRow(1);
-         }  
+//          var rowCount=table2.rows.length;     
+//          for (var i = 1; i < rowCount; i++) {         
+//             table2.deleteRow(1);
+//          }  
+//          var rowCount=table3.rows.length;     
+//          for (var i = 1; i < rowCount; i++) {         
+//             table3.deleteRow(1);
+//          }  
          
-         //replace array3 with array 2
-         displayArray3=[...displayArray2];
-         //replace array2 with array 1
-         displayArray2=[...displayArray1];
-         //start service
-         table1name="["+table1name+"]"+ "  ->  "+"["+new Date().toLocaleString()+"]";
-         table1_heading.innerHTML=table1name;
-         if(displayArray3.length>0){
-            var column3=document.getElementById("col3");
-            column3.style.display="block";
-            for(var i=0;i< displayArray3.length;i++){         
-               insertRowTable(displayArray3[i],i,table3);
-            }
-            table3_heading.innerHTML=table2_heading.innerHTML;
-         }
-         if(displayArray2.length>0){
-            var column2=document.getElementById("col2");
-            column2.style.display="block";
-            for(var i=0;i< displayArray2.length;i++){         
-               insertRowTable(displayArray2[i],i,table2);
-            }
-            table2_heading.innerHTML=table1_heading.innerHTML;
-         }
-         
-         
+//          //replace array3 with array 2
+//          displayArray3=[...displayArray2];
+//          //replace array2 with array 1
+//          displayArray2=[...displayArray1];
+//          //start service
+//          table1name="["+table1name+"]"+ "  ->  "+"["+new Date().toLocaleString()+"]";
+//          table1_heading.innerHTML=table1name;
+//          if(displayArray3.length>0){
+//             var column3=document.getElementById("col3");
+//             column3.style.display="block";
+//             for(var i=0;i< displayArray3.length;i++){         
+//                insertRowTable(displayArray3[i],i,table3);
+//             }
+//             table3_heading.innerHTML=table2_heading.innerHTML;
+//          }
+//          if(displayArray2.length>0){
+//             var column2=document.getElementById("col2");
+//             column2.style.display="block";
+//             for(var i=0;i< displayArray2.length;i++){         
+//                insertRowTable(displayArray2[i],i,table2);
+//             }
+//             table2_heading.innerHTML=table1_heading.innerHTML;
+//          }
          
          
-         table1name= new Date().toLocaleString();
-         table1_heading.innerHTML=table1name;
+         
+         
+//          table1name= new Date().toLocaleString();
+//          table1_heading.innerHTML=table1name;
              
            
       
-   }, timeoutms);
+//    }, timeoutms);
 
 
- }
- document.getElementById("start_button").onclick = StartLive;
+//  }
+ document.getElementById("start_button").onclick = ServiceStart;
  document.getElementById("stop_button").onclick = ServiceStop;
 //  document.getElementById("save_button").onclick = SavetoDB;
 
@@ -321,3 +341,12 @@ function ServiceStart() {
 
 
  }
+
+ $(function () {
+   $('#datetimepicker1').datetimepicker();
+});
+
+function datetimepicker() {
+
+   console.log("datetimepicker");
+}

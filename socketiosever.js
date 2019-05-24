@@ -15,6 +15,9 @@ var ipAddresses=[];
 
 var links={};
 
+// app.get('/node_modules/moment/moment.js', function(req, res){
+//     res.sendFile(__dirname + '/node_modules/moment/moment.js');
+// });
 app.get('/', function(req, res){
     res.sendFile(__dirname + '/index.html');
 });
@@ -65,8 +68,11 @@ var j = schedule.scheduleJob('*/30 * * * * *',async function(){
             for(var i=0; i<datalength; i++ ){
 
                var recvArray= stdoutArray[i].split(" ");
-               recvArray[0]= parseInt(recvArray[0]);
-               updateData(recvArray,dataArray);
+               if(recvArray.length===8){
+                recvArray[0]= parseInt(recvArray[0]);
+                updateData(recvArray,dataArray);
+               }
+               
             }       
         });
 
@@ -86,7 +92,7 @@ var j = schedule.scheduleJob('*/30 * * * * *',async function(){
             
             var name = destinations[index];
             try{
-                mydb.query(sql,[name,JSON.stringify(dataArray),'ADMIN'], function (err, result) {
+                mydb.query(sql,[name,JSON.stringify(dataArray),'TEST2'], function (err, result) {
                     if (err) throw err;
                     console.log("Number of records inserted: " + result.affectedRows);    
                 });
@@ -268,10 +274,11 @@ io.on('connection', function(socket){
                 try{
                     mydb.query(sql,function (err, result) {
                         if (err) throw err;
-                        console.log("LOAD_DATA result: ",result[0].data);
-                        var outjsonobj={"command":"LOAD_DATA","value":result[0].data}
-                        socket.emit("message",outjsonobj);                
-                                
+                        if(result[0] != undefined){
+                            console.log("LOAD_DATA result: ",result[0].data);
+                            var outjsonobj={"command":"LOAD_DATA","value":result[0].data}
+                            socket.emit("message",outjsonobj);                
+                        }        
                     });
                 }catch(err){
                     console.log(err);
@@ -281,24 +288,26 @@ io.on('connection', function(socket){
 
             case 'LOAD_HISTORY':
             
-                var nameArray=[];
-                var sql = "SELECT name FROM dumps.mtr_save where user="+JSON.stringify(injsonobj.username) + " ORDER BY id DESC LIMIT 10";  
+                
+                var sql = "SELECT data FROM dumps.mtr_save where name="+JSON.stringify(injsonobj.url) +"AND "+ "user="+JSON.stringify(injsonobj.username)+ " ORDER BY id DESC LIMIT 1";  
+                
             
                 try{
                     mydb.query(sql,function (err, result) {
                         if (err) throw err;
-                        Object.keys(result).forEach(function(key) {
-                            var row = result[key];  
-                            nameArray.push(row.name);
-                        });
                         
-                        var outjsonobj={"command":"LOAD_HISTORY","value":JSON.stringify(nameArray)}
-                        socket.emit("message",outjsonobj);                 
+                        if(result[0] != undefined){
+                            // console.log("result[0].data", result[0].data);
+                            console.log("LOAD_HISTORY result: ",result[0].data);
+                            var outjsonobj={"command":"LOAD_HISTORY","value":result[0].data}
+                            socket.emit("message",outjsonobj);   
+                        }
+                                     
                                 
                     });
                 }catch(err){
-                    console.log(err); 
-                }              
+                    console.log(err);
+                }            
     
                 break;
 
@@ -333,11 +342,13 @@ function updateData(recvArray,dataArray){
             dataArray.splice(index,0,recvArray);           
            break;
         }
+        else if(recvArray[0] > dataArray[dataArray.length-1][0]){
+            dataArray.push(recvArray);
+            break;
+         }
      }
      if(recvArray[0] ==1 && dataArray[0] === undefined ){
         dataArray.push(recvArray);   
      }
-     else if(recvArray[0] > dataArray[dataArray.length-1][0]){
-        dataArray.push(recvArray);
-     }
+     
    }
