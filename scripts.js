@@ -6,9 +6,12 @@
     var displayArray1 =[];
     var displayArray2=[];
     var displayArray3=[];
+    var displayArray=[displayArray1,displayArray2,displayArray3];
+    
     var table1 = document.getElementById("table1");
     var table2 = document.getElementById("table2");
     var table3 = document.getElementById("table3");
+    var table=[table1,table2,table3];
     var singapore = document.getElementById("pingsinga");
     var mumbai = document.getElementById("pingmumbai");
     var oman = document.getElementById("pingoman");
@@ -17,6 +20,7 @@
     var table3_heading = document.getElementById("table3_name");
     var timevalue=document.getElementById("timeInput");
     var timediv=document.getElementById("inputGroupSelect01");
+   //  var getdate=document.getElementById("getdate");
     
     var table1name,table2name,table3name;
     var singaporeLinks=[];
@@ -119,15 +123,31 @@
             status = "STOPPED";
             // console.log("TYPE OF LOAD DATA:", typeof(injsonobj.value));
             displayArray2 = JSON.parse(injsonobj.value);
-            var rowCount=table2.rows.length;
+            var rowCount=table[1].rows.length;
             // console.log('currentTable.length :', rowCount);
             for (var i = 1; i < rowCount; i++) {
                // console.log('delete row :', i);
-               table2.deleteRow(1);
+               table[1].deleteRow(1);
             }  
             for(var i=0;i< displayArray2.length;i++){
                // console.log("LOAD DATA:", compareArray[i]);
-               insertRowTable(displayArray2[i],i,table2);
+               insertRowTable(displayArray2[i],i,table[1]);
+            }
+         break;
+         case "LOAD_DATA":
+            status = "STOPPED";
+            // console.log("TYPE OF LOAD DATA:", typeof(injsonobj.value));
+            
+            displayArray[injsonobj.table] = JSON.parse(injsonobj.value);
+            var rowCount=table[injsonobj.table].rows.length;
+            // console.log('currentTable.length :', rowCount);
+            for (var i = 1; i < rowCount; i++) {
+               // console.log('delete row :', i);
+               table[injsonobj.table].deleteRow(1);
+            }  
+            for(var i=0;i< displayArray[injsonobj.table].length;i++){
+               // console.log("LOAD DATA:", compareArray[i]);
+               insertRowTable(displayArray[injsonobj.table][i],i,table[injsonobj.table]);
             }
          break;
          case "TIMEOUT":
@@ -151,12 +171,12 @@
 function ServiceStart() {
    if(status === "STOPPED"){
    
-      displayArray1 =[];
-      var rowCount=table1.rows.length;
+      displayArray[0] =[];
+      var rowCount=table[0].rows.length;
      
       for (var i = 1; i < rowCount; i++) {
          
-         table1.deleteRow(1);
+         table[0].deleteRow(1);
       }  
       
        url = document.getElementById("input").value;
@@ -272,6 +292,11 @@ function ServiceStart() {
 //  }
  document.getElementById("start_button").onclick = ServiceStart;
  document.getElementById("stop_button").onclick = ServiceStop;
+//  document.getElementById("getdate").onchange = function(){
+//     console.log("ON CHANGE");
+//    var jsonobj={"command":"LOAD_HISTORY","url":String(url),"username":"TEST2"}            
+//    socket.emit("message",jsonobj);
+//  };
 //  document.getElementById("save_button").onclick = SavetoDB;
 
 
@@ -279,36 +304,36 @@ function ServiceStart() {
   // console.log(recvArray);
    
    var index;
-   for(index=0; index<displayArray1.length; index++){
+   for(index=0; index<displayArray[0].length; index++){
 
-      if(displayArray1[index][0] === recvArray[0]){
-         if(displayArray1[index][1] != recvArray[1]){
-            displayArray1=[];
-            var rowCount=table1.rows.length;     
+      if(displayArray[0][index][0] === recvArray[0]){
+         if(displayArray[0][index][1] != recvArray[1]){
+            displayArray[0]=[];
+            var rowCount=table[0].rows.length;     
             for (var i = 1; i < rowCount; i++) {         
-               table1.deleteRow(1);
+               table[0].deleteRow(1);
             }
             break;
          }
-         displayArray1.splice(index,1,recvArray);
-         table1.deleteRow(index+1);
-         insertRowTable(recvArray,index,table1);
+         displayArray[0].splice(index,1,recvArray);
+         table[0].deleteRow(index+1);
+         insertRowTable(recvArray,index,table[0]);
          break;
       }
-      else if(displayArray1[index][0] > recvArray[0]){
-         displayArray1.splice(index,0,recvArray);
-         insertRowTable(recvArray,index,table1);
+      else if(displayArray[0][index][0] > recvArray[0]){
+         displayArray[0].splice(index,0,recvArray);
+         insertRowTable(recvArray,index,table[0]);
          break;
       }
    }
-   if(recvArray[0] ==1 && displayArray1[0] === undefined ){
-      displayArray1.push(recvArray);
-      insertRowTable(recvArray,0,table1);
+   if(recvArray[0] ==1 && displayArray[0][0] === undefined ){
+      displayArray[0].push(recvArray);
+      insertRowTable(recvArray,0,table[0]);
 
    }
-   else if(recvArray[0] > displayArray1[displayArray1.length-1][0]){
-      displayArray1.push(recvArray);
-      insertRowTable(recvArray,displayArray1.length-1,table1);
+   else if(recvArray[0] > displayArray[0][displayArray[0].length-1][0]){
+      displayArray[0].push(recvArray);
+      insertRowTable(recvArray,displayArray[0].length-1,table[0]);
    }
 
  }
@@ -342,11 +367,64 @@ function ServiceStart() {
 
  }
 
- $(function () {
-   $('#datetimepicker1').datetimepicker();
-});
 
-function datetimepicker() {
 
-   console.log("datetimepicker");
-}
+$('#getdate3').datepicker(
+   {
+         language: 'en',
+         onSelect: function onSelect(fd, date) {
+            var rowCount=table[2].rows.length;
+            
+            for (var i = 1; i < rowCount; i++) {
+               
+               table[2].deleteRow(1);
+            }  
+            var localdate= date.getFullYear()+'-'+(date.getMonth()+1)+'-'+date.getDate();
+            
+            var jsonobj={"command":"LOAD_DATA","url":String(document.getElementById("input").value),"username":"TEST3","date":localdate,table:2};  
+            socket.emit("message",jsonobj);
+         }
+         }
+)
+// Access instance of plugin
+$('#getdate3').data('datepicker')
+
+$('#getdate2').datepicker(
+   {
+         language: 'en',
+         onSelect: function onSelect(fd, date) {
+            var rowCount=table[1].rows.length;
+            
+            for (var i = 1; i < rowCount; i++) {
+               
+               table[1].deleteRow(1);
+            }  
+            var localdate= date.getFullYear()+'-'+(date.getMonth()+1)+'-'+date.getDate();
+            
+            var jsonobj={"command":"LOAD_DATA","url":String(document.getElementById("input").value),"username":"TEST3","date":localdate,table:1};  
+            socket.emit("message",jsonobj);
+         }
+         }
+)
+// Access instance of plugin
+$('#getdate2').data('datepicker')
+
+$('#getdate1').datepicker(
+   {
+         language: 'en',
+         onSelect: function onSelect(fd, date) {
+            var rowCount=table[0].rows.length;
+            
+            for (var i = 1; i < rowCount; i++) {
+               
+               table[0].deleteRow(1);
+            }  
+            var localdate= date.getFullYear()+'-'+(date.getMonth()+1)+'-'+date.getDate();
+            
+            var jsonobj={"command":"LOAD_DATA","url":String(document.getElementById("input").value),"username":"TEST3","date":localdate,table:0};  
+            socket.emit("message",jsonobj);
+         }
+         }
+)
+// Access instance of plugin
+$('#getdate1').data('datepicker')

@@ -15,9 +15,16 @@ var ipAddresses=[];
 
 var links={};
 
-// app.get('/node_modules/moment/moment.js', function(req, res){
-//     res.sendFile(__dirname + '/node_modules/moment/moment.js');
-// });
+app.get('/datepicker/js/i18n/datepicker.en.js', function(req, res){
+    res.sendFile(__dirname + '/datepicker/js/i18n/datepicker.en.js');
+});  
+app.get('/datepicker/js/datepicker.min.js', function(req, res){
+    
+    res.sendFile(__dirname + '/datepicker/js/datepicker.min.js');
+});
+app.get('/datepicker/css', function(req, res){
+    res.sendFile(__dirname + '/datepicker/css/datepicker.min.css');
+});
 app.get('/', function(req, res){
     res.sendFile(__dirname + '/index.html');
 });
@@ -87,12 +94,14 @@ var j = schedule.scheduleJob('*/30 * * * * *',async function(){
             process = undefined;
             clearTimeout(timeout);
 
-            var sql = "INSERT INTO dumps.mtr_save (`name`, `data`,`user`) VALUES(?,?,?)";  
-            
+            var sql = "INSERT INTO dumps.mtr_save (`name`, `data`,`user`,`date`,`time`) VALUES(?,?,?,?,?)";  
+            var today = new Date();
+            var date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
+            var time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
             
             var name = destinations[index];
             try{
-                mydb.query(sql,[name,JSON.stringify(dataArray),'TEST2'], function (err, result) {
+                mydb.query(sql,[name,JSON.stringify(dataArray),'TEST3',date,time], function (err, result) {
                     if (err) throw err;
                     console.log("Number of records inserted: " + result.affectedRows);    
                 });
@@ -251,14 +260,12 @@ io.on('connection', function(socket){
 
             case 'SAVE':
                 
-                var sql = "INSERT INTO dumps.mtr_save (`name`, `data`,`user`) VALUES(?,?,?)";  
-            
+                var sql = "INSERT INTO dumps.mtr_save (`name`, `data`,`user`,`date`,`time`) VALUES(?,?,?,?,?)";  
                 var today = new Date();
                 var date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
                 var time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
-                var name = date+' '+time+' '+injsonobj.url;
                 try{
-                    mydb.query(sql,[name,JSON.stringify(injsonobj.value),injsonobj.username], function (err, result) {
+                    mydb.query(sql,[injsonobj.url,JSON.stringify(injsonobj.value),injsonobj.username,date,time], function (err, result) {
                         if (err) throw err;
                         console.log("Number of records inserted: " + result.affectedRows);    
                     });
@@ -270,13 +277,14 @@ io.on('connection', function(socket){
 
             case 'LOAD_DATA':                
             
-                var sql = "SELECT data FROM dumps.mtr_save where name="+ JSON.stringify(injsonobj.value) +"AND "+ "user="+JSON.stringify(injsonobj.username) ;
+                var sql = "SELECT data FROM dumps.mtr_save where name="+ JSON.stringify(injsonobj.url) +" AND "+ "user="+JSON.stringify(injsonobj.username)+" AND "+ "date="+JSON.stringify(injsonobj.date)+ " ORDER BY id DESC LIMIT 1" ;
+                console.log(sql);
                 try{
                     mydb.query(sql,function (err, result) {
                         if (err) throw err;
                         if(result[0] != undefined){
                             console.log("LOAD_DATA result: ",result[0].data);
-                            var outjsonobj={"command":"LOAD_DATA","value":result[0].data}
+                            var outjsonobj={"command":"LOAD_DATA","value":result[0].data,table:injsonobj.table}
                             socket.emit("message",outjsonobj);                
                         }        
                     });
@@ -289,7 +297,7 @@ io.on('connection', function(socket){
             case 'LOAD_HISTORY':
             
                 
-                var sql = "SELECT data FROM dumps.mtr_save where name="+JSON.stringify(injsonobj.url) +"AND "+ "user="+JSON.stringify(injsonobj.username)+ " ORDER BY id DESC LIMIT 1";  
+                var sql = "SELECT data FROM dumps.mtr_save where name="+JSON.stringify(injsonobj.url) +" AND "+ "user="+JSON.stringify(injsonobj.username)+ " ORDER BY id DESC LIMIT 1";  
                 
             
                 try{
