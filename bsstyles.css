@@ -33,7 +33,7 @@ body {
    
     margin: auto;
     width: 33.33%;
-    margin-top: 4%;
+    margin-top: 2%;
     max-width: 600px;
     border-width: 15px;
     min-width: 400px;
@@ -99,8 +99,13 @@ body {
 }
 #input:valid{
     background-color: #ffeecdaf;
+    
     /* border-color: #285e8e; */
     /* font-size: bolder; */
+}
+.locationName{
+
+  background-color: #49a3f741;
 }
 #start_button:hover, #start_button:focus, #start_button:active{
     color: #fff;
@@ -123,7 +128,7 @@ body {
     
   } */
   .container-fluid{
-    margin-top: 2%;
+    margin-top: 0;
     
    
   }
@@ -131,20 +136,29 @@ body {
     /* margin-bottom: 10%; */
 
   }
+  #pingrow{
+    margin-top: 2%;
+  }
+  
   #col1{
-    max-width: 33.33%;
+    max-width: 40%;
+    /* max-width: 33.33%; */
     min-width: 600px;
-    /* display: none; */
+    display: none;
+    margin-right: 2%
   }
   #col2{
-    max-width: 33.33%;
+    max-width: 40%;
+    /* max-width: 33.33%; */
     min-width: 600px;
-    /* display: none; */
+    display: none;
+    margin-right: 2%
   } 
  #col3{ 
-  max-width: 33.33%;
+  /* max-width: 33.33%; */
   min-width: 600px;
-  /* display: none; */
+  display: none;
+  margin-right: 2%
   }
 #pingcol{ 
   /* max-width: 33.33%; */
